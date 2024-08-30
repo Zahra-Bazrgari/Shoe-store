@@ -1,34 +1,30 @@
-import '../style.css';
-import axios from 'axios';
-import Toastify from 'toastify-js'
+import "../style.css";
+import { signup } from "../Apis/services/auth.service.js";
+import { errorHandler } from '../libraries/errorHandler';
+import { setSessionToken } from "../libraries/session-manager.js";
 
-const signUpInputs = document.querySelector('form');
-signUpInputs.addEventListener("submit", (event) => {
-    event.preventDefault();
-    
-    const userName = event.target.children[0].value;
-    const passWord = event.target.children[1].value;
-
-    console.log('Username:', userName, 'Password:', passWord);
-
-    // Toastify({
-    //     text: "This is a toast",
-    //     duration: 3000,
-    //     close: true,
-    //     style: {
-    //       background: "linear-gradient(to right, #b00000, #c93d3d)",
-    //     },
-    //   }).showToast();
-    
+document.querySelector(".vector").addEventListener("click", () => {
+  window.location.href = "login.html";
 });
 
-async function signUpFunction() {
-    try{
-        const response = await axios.get("");
-        return response;
-    } catch {
-        console.log(error);
-    }
-}
+const signupForm = document.getElementById("signup-inputs");
 
-signUpFunction();
+signupForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const usernameInput = event.target.children[0];
+  const passwordInput = event.target.children[1];
+
+  try {
+    const response = await signup({
+      username: usernameInput.value,
+      password: passwordInput.value,
+    });
+
+    console.log(response);
+    setSessionToken(response.token)
+    
+  } catch (error) {
+    errorHandler(error);
+  }
+});

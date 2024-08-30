@@ -1,7 +1,7 @@
 import { urls } from "../urls";
 import { httpClient } from "../client";
 
-export async function login(data) {
+export async function login(data){
   const response = await httpClient().post(urls.auth.login, data);
   return response.data;
 }

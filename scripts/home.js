@@ -1,6 +1,7 @@
 import '../style.css';
 import Swiper from 'swiper';
 import 'swiper/css';
+import { getSessionToken } from "../libraries/session-manager.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     const swiperContainer = document.querySelector('.swiper-container');
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    console.log('Swiper container found:', swiperContainer); // Debugging line
+    console.log('Swiper container found:', swiperContainer);
 
     const swiper = new Swiper('.swiper-container', {
         slidesPerView: 'auto',
@@ -24,3 +25,32 @@ document.addEventListener('DOMContentLoaded', () => {
         swiperContainer.scrollLeft = 0;
     });
 });
+
+async function getGreeting() {
+    const hours = new Date().getHours();
+    let greeting = 'Good day';
+
+    if (hours < 12) {
+        greeting = 'Good morning';
+    } else if (hours < 18) {
+        greeting = 'Good afternoon';
+    } else {
+        greeting = 'Good night';
+    }
+
+    const sessionToken = getSessionToken(response.token);
+
+    try {
+        const response = await axios.get('http://localhost:3000/user', {
+            headers: {
+                'Authorization': `Bearer ${sessionToken}`
+            }
+        });
+        document.querySelector('username').innerText = `${greeting}, ${response.data.username}`
+  
+      } catch (error) {
+        console.log(error);
+      }
+}
+
+getGreeting();

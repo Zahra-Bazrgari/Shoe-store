@@ -1,0 +1,1 @@
+export const tokenName = "shoe-store-session-token";
