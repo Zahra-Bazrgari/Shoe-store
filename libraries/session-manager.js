@@ -11,3 +11,4 @@ export const getSessionToken = () => {
 export const removeSessionToken = () => {
     localStorage.removeItem(tokenName)
 }
+
