@@ -22,7 +22,8 @@ signupForm.addEventListener("submit", async (event) => {
     });
 
     console.log(response);
-    setSessionToken(response.token)
+    setSessionToken(response.token);
+    window.location.href = "/home.html";
     
   } catch (error) {
     errorHandler(error);

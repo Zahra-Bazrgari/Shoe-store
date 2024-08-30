@@ -11,7 +11,6 @@ const loginForm = document.getElementById("login-inputs");
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  console.log("ok");
   
 
   const usernameInput = event.target.children[0];
@@ -24,6 +23,7 @@ loginForm.addEventListener("submit", async (event) => {
     });
     console.log(response);
     setSessionToken(response.token);
+    window.location.href = "/home.html";
    
   } catch (error) {
     errorHandler(error);
