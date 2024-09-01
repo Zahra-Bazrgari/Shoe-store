@@ -8,6 +8,8 @@ import { httpClient } from "../Apis/client.js";
 import axios from "axios";
 import { getSessionToken } from "../libraries/session-manager.js";
 
+let selectedBrand = null; 
+let allSneakers = [];
 
 async function main() {
   try {
@@ -17,7 +19,6 @@ async function main() {
     errorHandler(error);
   }
 }
-
 
 async function displayGreeting() {
   const greetingElement = document.getElementById("greeting");
@@ -46,90 +47,83 @@ async function displayGreeting() {
   }
 }
 
-
-async function getBrands() {
+async function fetchSneakers(page = 1, limit = 100) {
   const sessionToken = getSessionToken();
+
+  let url = `http://localhost:3000/sneaker?page=${page}&limit=${limit}`;
 
   try {
     const response = await axios({
       method: "get",
-      url: "http://localhost:3000/sneaker/brands",
-      headers: { Authorization: `Bearer ${sessionToken}` },
-    });
-
-    if (Array.isArray(response.data)) {
-      const brands = response.data;
-      generateBrandButtons(brands);
-    } else {
-      console.log("Unexpected response format:", response.data);
-    }
-  } catch (error) {
-    console.log("Error fetching brands:", error.message);
-  }
-}
-
-
-function generateBrandButtons(brands) {
-  const container = document.getElementById("brandContainer");
-  container.innerHTML = "";
-
-  const allButton = document.createElement("button");
-  allButton.className = "px-4 py-2 rounded-full bg-slate-900 text-white";
-  allButton.innerText = "All";
-  container.appendChild(allButton);
-
-  brands.forEach((brand) => {
-    const button = document.createElement("button");
-    button.className =
-      "px-4 py-2 rounded-full border border-gray-300 text-gray-700";
-    button.innerText = brand;
-    container.appendChild(button);
-  });
-}
-
-
-async function fetchSneakers(page = 1, limit = 10) {
-  const sessionToken = getSessionToken();
-
-  try {
-    const response = await axios({
-      method: "get",
-      url: `http://localhost:3000/sneaker?page=${page}&limit=${limit}`,
+      url: url,
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
     console.log("Get sneakers response: ", response);
-    return response.data;
+    allSneakers = response.data.data; 
+    generateBrandButtons(); 
+    renderSneakers(1, 10);
   } catch (error) {
     console.error("Error fetching sneakers:", error);
   }
 }
 
-async function renderSneakers(page = 1, limit = 10) {
+function generateBrandButtons() {
+  const container = document.getElementById("brandContainer");
+  container.innerHTML = "";
+
+  const allButton = document.createElement("button");
+  allButton.classList = "px-4 py-2 rounded-full bg-black text-white no-wrap";
+  allButton.innerText = "All";
+  allButton.addEventListener("click", () => handleBrandSelection(allButton, null));
+  container.appendChild(allButton);
+
+  const uniqueBrands = [...new Set(allSneakers.map(sneaker => sneaker.brand))];
+  
+  uniqueBrands.forEach((brand) => {
+    const button = document.createElement("button");
+    button.classList = "text-nowrap px-4 py-2 rounded-full border border-gray-300 text-gray-700 no-wrap";
+    button.innerText = brand;
+    button.addEventListener("click", () => handleBrandSelection(button, brand));
+    container.appendChild(button);
+  });
+}
+
+function handleBrandSelection(button, brand) {
+  const buttons = document.querySelectorAll("#brandContainer button");
+  buttons.forEach((btn) => btn.classList = "text-nowrap px-4 py-2 rounded-full border border-gray-300 text-gray-700 no-wrap");
+
+  button.classList = "no-wrap px-4 py-2 rounded-full bg-black text-white";
+
+  selectedBrand = brand;
+  renderSneakers(1, 10); 
+}
+
+function renderSneakers(page = 1, limit = 10) {
   const cardContainer = document.querySelector(".card-container");
   cardContainer.innerHTML = "";
 
-  const gettingSneakers = await fetchSneakers(page, limit);
-  const sneakers = gettingSneakers.data;
-  const totalSneakers = gettingSneakers.total;
+  const filteredSneakers = selectedBrand ? allSneakers.filter(sneaker => sneaker.brand === selectedBrand) : allSneakers;
+  const totalSneakers = filteredSneakers.length;
 
-  sneakers.forEach((sneaker) => {
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const sneakersToDisplay = filteredSneakers.slice(startIndex, endIndex);
+
+  sneakersToDisplay.forEach((sneaker) => {
     const card = document.createElement("div");
-    card.className =
-      "card flex flex-col items-start bg-white p-4 rounded-lg shadow-lg";
+    card.classList = "no-wrap card flex flex-col items-start bg-white p-1 rounded-lg";
 
     card.innerHTML = `
-      <img src="${sneaker.imageURL}" alt="${sneaker.name}" class="rounded-lg mb-4 h-1">
-      <h2 class="text-lg font-semibold">${sneaker.name}</h2>
+      <img src="${sneaker.imageURL}" alt="${sneaker.name}" class="rounded-lg mb-4 w-full max-h-48">
+      <h2 class="text-lg font-semibold truncate max-w-full">${sneaker.name}</h2>
       <p class="text-gray-500">$${sneaker.price}</p>
     `;
 
     cardContainer.appendChild(card);
   });
 
-
   createPagination(totalSneakers, page, limit);
 }
-
 
 function createPagination(totalItems, currentPage = 1, limit = 10) {
   const paginationContainer = document.querySelector("#pagination");
@@ -139,7 +133,7 @@ function createPagination(totalItems, currentPage = 1, limit = 10) {
   for (let i = 1; i <= totalPages; i++) {
     const button = document.createElement("button");
     button.classList = `px-4 py-2 rounded-full ${
-      i === currentPage ? "bg-blue-500 text-white" : "bg-white text-blue-500"
+      i === currentPage ? "bg-black text-white" : "bg-white text-black"
     }`;
     button.innerText = i;
 
@@ -151,10 +145,8 @@ function createPagination(totalItems, currentPage = 1, limit = 10) {
   }
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   main();
   displayGreeting();
-  getBrands();
-  renderSneakers();
+  fetchSneakers(); 
 });
