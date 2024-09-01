@@ -8,7 +8,7 @@ import { httpClient } from "../Apis/client.js";
 import axios from "axios";
 import { getSessionToken } from "../libraries/session-manager.js";
 
-// works fine
+
 async function main() {
   try {
     const response = await getUserInfo();
@@ -18,7 +18,7 @@ async function main() {
   }
 }
 
-// works fine
+
 async function displayGreeting() {
   const greetingElement = document.getElementById("greeting");
   const userNameElement = document.querySelector(".username");
@@ -34,7 +34,7 @@ async function displayGreeting() {
   } else {
     greeting = "Good night";
   }
-  greetingElement.textContent = `${greeting}`;
+  greetingElement.textContent = `${greeting} 👋`;
 
   try {
     const response = await getUserInfo();
@@ -46,19 +46,16 @@ async function displayGreeting() {
   }
 }
 
-// works fine, needs updates
+
 async function getBrands() {
   const sessionToken = getSessionToken();
-  console.log("Session Token:", sessionToken);
 
   try {
     const response = await axios({
       method: "get",
-      url: `http://localhost:3000/sneaker/brands`,
+      url: "http://localhost:3000/sneaker/brands",
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
-
-    console.log("Full Response:", response);
 
     if (Array.isArray(response.data)) {
       const brands = response.data;
@@ -71,13 +68,13 @@ async function getBrands() {
   }
 }
 
-// works fine, needs updates
+
 function generateBrandButtons(brands) {
   const container = document.getElementById("brandContainer");
   container.innerHTML = "";
 
   const allButton = document.createElement("button");
-  allButton.className = "px-4 py-2 rounded-full bg-black text-white";
+  allButton.className = "px-4 py-2 rounded-full bg-slate-900 text-white";
   allButton.innerText = "All";
   container.appendChild(allButton);
 
@@ -93,7 +90,6 @@ function generateBrandButtons(brands) {
 
 async function fetchSneakers(page = 1, limit = 10) {
   const sessionToken = getSessionToken();
-  console.log("Session Token:", sessionToken);
 
   try {
     const response = await axios({
@@ -101,26 +97,28 @@ async function fetchSneakers(page = 1, limit = 10) {
       url: `http://localhost:3000/sneaker?page=${page}&limit=${limit}`,
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
-
-    return response.data; // Return the fetched sneaker data
+    console.log("Get sneakers response: ", response);
+    return response.data;
   } catch (error) {
     console.error("Error fetching sneakers:", error);
-    return [];
   }
 }
 
 async function renderSneakers(page = 1, limit = 10) {
-  const cardContainer = document.querySelector('.card-container');
-  cardContainer.innerHTML = ''; // Clear the card container
+  const cardContainer = document.querySelector(".card-container");
+  cardContainer.innerHTML = "";
 
-  const sneakers = await fetchSneakers(page, limit);
+  const gettingSneakers = await fetchSneakers(page, limit);
+  const sneakers = gettingSneakers.data;
+  const totalSneakers = gettingSneakers.total;
 
   sneakers.forEach((sneaker) => {
-    const card = document.createElement('div');
-    card.className = 'card flex flex-col items-center bg-white p-4 rounded-lg shadow-lg';
+    const card = document.createElement("div");
+    card.className =
+      "card flex flex-col items-start bg-white p-4 rounded-lg shadow-lg";
 
     card.innerHTML = `
-      <img src="${sneaker.image}" alt="${sneaker.name}" class="w-full h-40 object-cover rounded-lg mb-4">
+      <img src="${sneaker.imageURL}" alt="${sneaker.name}" class="rounded-lg mb-4 h-1">
       <h2 class="text-lg font-semibold">${sneaker.name}</h2>
       <p class="text-gray-500">$${sneaker.price}</p>
     `;
@@ -128,29 +126,35 @@ async function renderSneakers(page = 1, limit = 10) {
     cardContainer.appendChild(card);
   });
 
-  renderPagination(page, limit);
+
+  createPagination(totalSneakers, page, limit);
 }
 
 
-function renderPagination(currentPage, limit) {
-  const paginationContainer = document.querySelector('.pagination');
-  paginationContainer.innerHTML = ''; 
+function createPagination(totalItems, currentPage = 1, limit = 10) {
+  const paginationContainer = document.querySelector("#pagination");
+  paginationContainer.innerHTML = ""; 
+  const totalPages = Math.ceil(totalItems / limit);
 
-  for (let i = 1; i <= 5; i++) { //idk about the number of pages
-    const pageButton = document.createElement('button');
-    pageButton.className = `page-btn px-4 py-2 mx-1 bg-blue-500 text-white rounded-lg ${i === currentPage ? 'bg-blue-700' : ''}`;
-    pageButton.textContent = i;
-    pageButton.addEventListener('click', () => {
+  for (let i = 1; i <= totalPages; i++) {
+    const button = document.createElement("button");
+    button.classList = `px-4 py-2 rounded-full ${
+      i === currentPage ? "bg-blue-500 text-white" : "bg-white text-blue-500"
+    }`;
+    button.innerText = i;
+
+    button.addEventListener("click", () => {
       renderSneakers(i, limit);
     });
 
-    paginationContainer.appendChild(pageButton);
+    paginationContainer.appendChild(button);
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   main();
   displayGreeting();
   getBrands();
-  renderSneakers(); 
+  renderSneakers();
 });
