@@ -17,6 +17,7 @@
   "dependencies": {
     "axios": "^1.7.5",
     "swiper": "^11.1.10",
+    "tailwind-scrollbar-hide": "^1.1.7",
     "toastify-js": "^1.12.0"
   }
 }

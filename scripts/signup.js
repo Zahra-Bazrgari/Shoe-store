@@ -7,13 +7,23 @@ document.querySelector(".vector").addEventListener("click", () => {
   window.location.href = "login.html";
 });
 
+const togglePassword = document.getElementById('togglePassword');
+const passwordInput = document.getElementById('Password');
+
+togglePassword.addEventListener('click', function () {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+});
+
 const signupForm = document.getElementById("signup-inputs");
 
 signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const usernameInput = event.target.children[0];
-  const passwordInput = event.target.children[1];
+  const usernameInput = event.target.elements.userName;
+  const passwordInput = event.target.elements.password;
 
   try {
     const response = await signup({
