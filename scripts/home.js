@@ -10,6 +10,7 @@ import { getSessionToken } from "../libraries/session-manager.js";
 
 let selectedBrand = null; 
 let allSneakers = [];
+let debounceTimeout = null;
 
 async function main() {
   try {
@@ -112,16 +113,18 @@ function renderSneakers(page = 1, limit = 10) {
   sneakersToDisplay.forEach((sneaker) => {
     const card = document.createElement("div");
     card.classList = "no-wrap card flex flex-col items-start bg-white p-1 rounded-lg";
-
     card.innerHTML = `
       <img src="${sneaker.imageURL}" alt="${sneaker.name}" class="rounded-lg mb-4 w-full max-h-48">
       <h2 class="text-lg font-semibold truncate max-w-full">${sneaker.name}</h2>
       <p class="text-gray-500">$${sneaker.price}</p>
     `;
 
+    card.addEventListener("click", () => navigateToDetailsPage(sneaker.id)); 
+
     cardContainer.appendChild(card);
   });
 
+  togglePagination(true); 
   createPagination(totalSneakers, page, limit);
 }
 
@@ -144,6 +147,66 @@ function createPagination(totalItems, currentPage = 1, limit = 10) {
     paginationContainer.appendChild(button);
   }
 }
+
+function searchSneakers(item) {
+  const filteredSneakers = allSneakers.filter(sneaker =>
+    sneaker.name.toLowerCase().includes(item.toLowerCase()) ||
+    sneaker.brand.toLowerCase().includes(item.toLowerCase())
+  );
+
+  const cardContainer = document.querySelector(".card-container");
+  cardContainer.innerHTML = "";
+
+  if (filteredSneakers.length > 0) {
+    filteredSneakers.forEach((sneaker) => {
+      const card = document.createElement("div");
+      card.classList = "no-wrap card flex flex-col items-start bg-white p-1 rounded-lg";
+      card.innerHTML = `
+        <img src="${sneaker.imageURL}" alt="${sneaker.name}" class="rounded-lg mb-4 w-full max-h-48">
+        <h2 class="text-lg font-semibold truncate max-w-full">${sneaker.name}</h2>
+        <p class="text-gray-500">$${sneaker.price}</p>
+      `;
+
+      card.addEventListener("click", () => navigateToDetailsPage(sneaker.id)); 
+
+      cardContainer.appendChild(card);
+    });
+  } else {
+    const noResults = document.createElement("div");
+    noResults.classList = "w-screen flex flex-col justify-center items-center text-center"; 
+    noResults.innerHTML = `
+        <img src="pictures/Screenshot 2024-09-03 023813.png" alt="Not Found">
+        <p class="font-bold">Not Found</p>
+        <p>Sorry, the keyword you entered cannot be found. Please check again or search with another keyword.</p>
+    `;
+    cardContainer.appendChild(noResults);
+  }
+
+  togglePagination(false); 
+}
+
+function togglePagination(show) {
+  const paginationContainer = document.querySelector("#pagination");
+  if (paginationContainer) {
+    paginationContainer.style.display = show ? "block" : "none";
+  }
+}
+
+function handleSearch(event) {
+  const query = event.target.value.trim();
+
+  if (debounceTimeout) clearTimeout(debounceTimeout);
+
+  debounceTimeout = setTimeout(() => {
+    searchSneakers(query);
+  }, 1500);
+}
+
+function navigateToDetailsPage(sneakerId) {
+  window.location.href = `/sneakers.html?sneakerId=${sneakerId}`;
+}
+
+document.getElementById("search-box").addEventListener("input", handleSearch);
 
 document.addEventListener("DOMContentLoaded", () => {
   main();
