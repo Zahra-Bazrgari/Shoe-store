@@ -59,12 +59,13 @@ async function fetchSneakers(page = 1, limit = 100) {
       url: url,
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
+
     console.log("Get sneakers response: ", response);
     allSneakers = response.data.data; 
     generateBrandButtons(); 
     renderSneakers(1, 10);
   } catch (error) {
-    console.error("Error fetching sneakers:", error);
+    errorHandler(error)
   }
 }
 

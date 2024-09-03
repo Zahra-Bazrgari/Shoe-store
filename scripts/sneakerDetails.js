@@ -2,6 +2,7 @@ import "../style.css";
 import { getSessionToken } from "../libraries/session-manager.js";
 import axios from "axios";
 
+
 const urlParams = new URLSearchParams(window.location.search);
 const sneakerId = urlParams.get("sneakerId");
 
@@ -60,6 +61,7 @@ function displaySneakerDetails(sneaker) {
 
   priceContainer.innerText = `$${sneaker.price}`;
 }
+
 
 let quantity = 0;
 const quantityDisplay = document.getElementById("quantity");
