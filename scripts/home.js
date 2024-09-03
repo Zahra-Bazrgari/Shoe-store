@@ -206,6 +206,7 @@ function navigateToDetailsPage(sneakerId) {
   window.location.href = `/sneakers.html?sneakerId=${sneakerId}`;
 }
 
+
 document.getElementById("search-box").addEventListener("input", handleSearch);
 
 document.addEventListener("DOMContentLoaded", () => {
